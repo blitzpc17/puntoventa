@@ -2,9 +2,9 @@
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="page-title">Registrar Venta</h1>
+    <h1 class="page-title">Registrar Nueva Venta</h1>
     <a href="{{ route('ventas.index') }}" class="btn btn-secondary">
-        <i class="fas fa-arrow-left me-2"></i>Volver
+        <i class="fas fa-arrow-left me-2"></i>Volver a Ventas
     </a>
 </div>
 
@@ -12,12 +12,12 @@
     <div class="col-md-8">
         <div class="card shadow mb-4">
             <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Productos</h6>
+                <h6 class="m-0 font-weight-bold text-primary">Productos de la Venta</h6>
             </div>
             <div class="card-body">
                 <div class="input-group mb-3">
-                    <input type="text" class="form-control" id="search-product" placeholder="Buscar producto...">
-                    <button class="btn btn-primary" type="button" id="btn-search">
+                    <input type="text" class="form-control" id="search-product" placeholder="Buscar producto por código o nombre...">
+                    <button class="btn btn-primary" type="button" id="btn-search-product">
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
@@ -28,7 +28,7 @@
                             <tr>
                                 <th>Producto</th>
                                 <th>Precio</th>
-                                <th>Existencia</th>
+                                <th>Stock</th>
                                 <th>Cantidad</th>
                                 <th>Subtotal</th>
                                 <th>Acción</th>
@@ -53,22 +53,26 @@
     <div class="col-md-4">
         <div class="card shadow mb-4">
             <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Información de Venta</h6>
+                <h6 class="m-0 font-weight-bold text-primary">Información de la Venta</h6>
             </div>
             <div class="card-body">
                 <form id="venta-form">
                     <div class="mb-3">
                         <label for="cliente_id" class="form-label">Cliente</label>
                         <select class="form-select" id="cliente_id" name="cliente_id">
-                            <option value="">Seleccionar cliente</option>
+                            <option value="">Cliente no registrado</option>
                             @foreach($clientes as $cliente)
-                                <option value="{{ $cliente->id }}">{{ $cliente->nombre }}</option>
+                                <option value="{{ $cliente->id }}" 
+                                    data-limite="{{ $cliente->limite_fiado }}"
+                                    data-saldo="{{ $cliente->saldo_pendiente }}">
+                                    {{ $cliente->nombre }} - Límite: ${{ number_format($cliente->limite_fiado, 2) }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="tipo_pago" class="form-label">Tipo de Pago</label>
+                        <label for="tipo_pago" class="form-label">Tipo de Pago *</label>
                         <select class="form-select" id="tipo_pago" name="tipo_pago" required>
                             <option value="efectivo">Efectivo</option>
                             <option value="tarjeta">Tarjeta</option>
@@ -76,12 +80,24 @@
                         </select>
                     </div>
                     
-                    <div id="fiado-info" class="alert alert-info d-none">
-                        <small>El cliente deberá pagar antes de la fecha límite.</small>
+                    <div id="efectivo-section" class="mb-3">
+                        <label for="efectivo" class="form-label">Efectivo Recibido *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" step="0.01" class="form-control" id="efectivo" name="efectivo" value="0">
+                        </div>
+                        <div class="form-text">Cambio: <span id="cambio">$0.00</span></div>
                     </div>
                     
-                    <button type="submit" class="btn btn-success w-100" id="btn-finalizar">
-                        <i class="fas fa-check me-2"></i>Finalizar Venta
+                    <div id="fiado-info" class="alert alert-info d-none">
+                        <h6>Información de Fiado</h6>
+                        <p>Límite: <span id="limite-fiado">$0.00</span></p>
+                        <p>Saldo Pendiente: <span id="saldo-pendiente">$0.00</span></p>
+                        <p>Disponible: <span id="disponible-fiado">$0.00</span></p>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success w-100" id="btn-registrar">
+                        <i class="fas fa-check me-2"></i>Registrar Venta
                     </button>
                 </form>
             </div>
@@ -96,8 +112,35 @@ $(document).ready(function() {
     let carrito = [];
     let total = 0;
     
+    // Mostrar/ocultar secciones según tipo de pago
+    $('#tipo_pago').change(function() {
+        const tipo = $(this).val();
+        $('#efectivo-section').toggle(tipo === 'efectivo');
+        $('#fiado-info').toggle(tipo === 'fiado');
+        
+        if (tipo === 'fiado') {
+            actualizarInfoFiado();
+        }
+    });
+    
+    // Actualizar información de fiado
+    function actualizarInfoFiado() {
+        const clienteId = $('#cliente_id').val();
+        if (!clienteId) {
+            Swal.fire('Error', 'Seleccione un cliente para venta a fiado', 'error');
+            $('#tipo_pago').val('efectivo').change();
+            return;
+        }
+        
+        $.get(`/ajax/clientes/${clienteId}/fiados`, function(cliente) {
+            $('#limite-fiado').text('$' + parseFloat(cliente.limite_fiado).toFixed(2));
+            $('#saldo-pendiente').text('$' + parseFloat(cliente.saldo_pendiente).toFixed(2));
+            $('#disponible-fiado').text('$' + parseFloat(cliente.disponible_fiado).toFixed(2));
+        });
+    }
+    
     // Buscar producto
-    $('#btn-search').click(buscarProducto);
+    $('#btn-search-product').click(buscarProducto);
     $('#search-product').on('keypress', function(e) {
         if(e.which === 13) {
             buscarProducto();
@@ -105,53 +148,48 @@ $(document).ready(function() {
         }
     });
     
-    // Mostrar/ocultar info de fiado
-    $('#tipo_pago').change(function() {
-        if ($(this).val() === 'fiado') {
-            $('#fiado-info').removeClass('d-none');
-        } else {
-            $('#fiado-info').addClass('d-none');
-        }
-    });
-    
     function buscarProducto() {
         const term = $('#search-product').val();
         
         if (term.length < 2) {
-            alert('Ingrese al menos 2 caracteres para buscar');
+            Swal.fire('Error', 'Ingrese al menos 2 caracteres para buscar', 'error');
             return;
         }
         
         $.ajax({
-            url: "{{ route('productos.buscar') }}",
+            url: "{{ route('ajax.productos.buscar') }}",
             method: 'GET',
             data: { term: term },
             success: function(response) {
                 if (response.length > 0) {
-                    // Mostrar modal de selección o agregar directamente si hay uno
                     if (response.length === 1) {
                         agregarAlCarrito(response[0]);
                     } else {
-                        // Mostrar modal con opciones
                         mostrarModalProductos(response);
                     }
                 } else {
-                    alert('No se encontraron productos');
+                    Swal.fire('Info', 'No se encontraron productos', 'info');
                 }
             }
         });
     }
     
     function agregarAlCarrito(producto) {
-        // Verificar si ya está en el carrito
+        if (producto.existencia <= 0) {
+            Swal.fire('Error', 'Producto sin stock disponible', 'error');
+            return;
+        }
+        
         const index = carrito.findIndex(item => item.id === producto.id);
         
         if (index !== -1) {
-            // Incrementar cantidad
+            if (carrito[index].cantidad >= producto.existencia) {
+                Swal.fire('Error', 'No hay suficiente stock', 'error');
+                return;
+            }
             carrito[index].cantidad += 1;
             carrito[index].subtotal = carrito[index].precio_venta * carrito[index].cantidad;
         } else {
-            // Agregar nuevo producto
             carrito.push({
                 id: producto.id,
                 nombre: producto.nombre,
@@ -176,7 +214,7 @@ $(document).ready(function() {
             
             const tr = $('<tr>');
             tr.append($('<td>').text(producto.nombre));
-            tr.append($('<td>').text('$' + producto.precio_venta.toFixed(2)));
+            tr.append($('<td>').text('$' + parseFloat(producto.precio_venta).toFixed(2)));
             tr.append($('<td>').text(producto.existencia));
             
             const inputCantidad = $('<input>')
@@ -192,13 +230,13 @@ $(document).ready(function() {
                         carrito[index].subtotal = producto.precio_venta * nuevaCantidad;
                         actualizarCarrito();
                     } else {
-                        alert('Cantidad no válida');
+                        Swal.fire('Error', 'Cantidad no válida', 'error');
                         $(this).val(producto.cantidad);
                     }
                 });
                 
             tr.append($('<td>').append(inputCantidad));
-            tr.append($('<td>').text('$' + producto.subtotal.toFixed(2)));
+            tr.append($('<td>').text('$' + parseFloat(producto.subtotal).toFixed(2)));
             
             const btnEliminar = $('<button>')
                 .addClass('btn btn-sm btn-danger')
@@ -213,20 +251,42 @@ $(document).ready(function() {
         });
         
         $('#total-venta').text('$' + total.toFixed(2));
+        
+        // Actualizar cambio
+        const efectivo = parseFloat($('#efectivo').val()) || 0;
+        const cambio = efectivo - total;
+        $('#cambio').text('$' + Math.max(0, cambio).toFixed(2));
     }
     
-    // Finalizar venta
+    // Calcular cambio en tiempo real
+    $('#efectivo').on('input', function() {
+        const efectivo = parseFloat($(this).val()) || 0;
+        const cambio = efectivo - total;
+        $('#cambio').text('$' + Math.max(0, cambio).toFixed(2));
+    });
+    
+    // Registrar venta
     $('#venta-form').on('submit', function(e) {
         e.preventDefault();
         
         if (carrito.length === 0) {
-            alert('Debe agregar al menos un producto');
+            Swal.fire('Error', 'Debe agregar al menos un producto', 'error');
             return;
         }
         
-        if ($('#tipo_pago').val() === 'fiado' && !$('#cliente_id').val()) {
-            alert('Para ventas a fiado debe seleccionar un cliente');
+        const tipoPago = $('#tipo_pago').val();
+        
+        if (tipoPago === 'fiado' && !$('#cliente_id').val()) {
+            Swal.fire('Error', 'Se requiere cliente para ventas a fiado', 'error');
             return;
+        }
+        
+        if (tipoPago === 'efectivo') {
+            const efectivo = parseFloat($('#efectivo').val()) || 0;
+            if (efectivo < total) {
+                Swal.fire('Error', 'El efectivo recibido es menor al total', 'error');
+                return;
+            }
         }
         
         const productos = carrito.map(item => {
@@ -238,9 +298,19 @@ $(document).ready(function() {
         
         const formData = {
             cliente_id: $('#cliente_id').val(),
-            tipo_pago: $('#tipo_pago').val(),
+            tipo_pago: tipoPago,
+            efectivo: $('#efectivo').val(),
             productos: productos
         };
+        
+        Swal.fire({
+            title: 'Registrando venta...',
+            text: 'Por favor espere',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
         
         $.ajax({
             url: "{{ route('ventas.store') }}",
@@ -250,11 +320,28 @@ $(document).ready(function() {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
-                alert(response.message);
-                window.location.href = "{{ route('ventas.show', '') }}/" + response.venta_id;
+                if (response.cambio > 0) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Venta Exitosa!',
+                        html: `Venta registrada<br>Cambio: $${parseFloat(response.cambio).toFixed(2)}`,
+                        showConfirmButton: true
+                    }).then(() => {
+                        window.location.href = "{{ route('ventas.show', '') }}/" + response.venta_id;
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Venta Exitosa!',
+                        showConfirmButton: false,
+                        timer: 2000
+                    }).then(() => {
+                        window.location.href = "{{ route('ventas.show', '') }}/" + response.venta_id;
+                    });
+                }
             },
             error: function(xhr) {
-                alert('Error: ' + xhr.responseJSON.message);
+                Swal.fire('Error', xhr.responseJSON.message, 'error');
             }
         });
     });

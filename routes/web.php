@@ -40,11 +40,43 @@ Route::get('clientes/buscar', [ClienteController::class, 'buscar'])->name('clien
 Route::resource('clientes', ClienteController::class);
 
 
+// Rutas para AJAX
+Route::prefix('ajax')->group(function () {
+    // Productos
+    Route::get('productos/buscar', [ProductoController::class, 'buscar'])->name('ajax.productos.buscar');
+    Route::get('productos/barcode', [ProductoController::class, 'getByBarcode'])->name('ajax.productos.barcode');
+    Route::post('productos/{id}/stock', [ProductoController::class, 'updateStock'])->name('ajax.productos.stock.update');
+    
+    // Clientes
+    Route::get('clientes/{id}/fiados', [ClienteController::class, 'getFiados'])->name('ajax.clientes.fiados');
+    
+    // Fiados
+    Route::get('fiados/cliente/{clienteId}', [FiadoController::class, 'getFiadosCliente'])->name('ajax.fiados.cliente');
+    Route::get('fiados/{id}/abonos', [FiadoController::class, 'getAbonos'])->name('fiados.abonos');
+    Route::post('fiados/abonar/{id}', [FiadoController::class, 'storeAbono'])->name('ajax.fiados.abonar');
+    
+    // Corte de Caja
+    Route::get('corte-caja/abierto', [CorteCajaController::class, 'getCorteAbierto'])->name('ajax.corte-caja.abierto');
+});
+
+// Rutas principales
+Route::get('ventas/{venta}/imprimir', [VentaController::class, 'imprimir'])->name('ventas.imprimir');
+Route::resource('ventas', VentaController::class);
+
+
+Route::resource('fiados', FiadoController::class);
+
+Route::post('corte-caja/{corte}/cerrar', [CorteCajaController::class, 'cerrar'])->name('corte-caja.cerrar');
+Route::resource('corte-caja', CorteCajaController::class);
+
+
+
+
 // Ventas
 Route::get('ventas/create', [VentaController::class, 'create'])->name('ventas.create');
 Route::resource('ventas', VentaController::class);
 
-
+/*
 // Compras
 Route::resource('compras', CompraController::class);
 
@@ -54,7 +86,7 @@ Route::resource('fiados', FiadoController::class);
 // Corte de Caja
 Route::get('corte-caja/generar', [CorteCajaController::class, 'generar'])->name('corte-caja.generar');
 Route::resource('corte-caja', CorteCajaController::class);
-
+*/
 
 // Dashboard
 Route::get('/dashboard', function () {
@@ -66,3 +98,6 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard/data', [DashboardController::class, 'getData'])->name('dashboard.data');
+
+
+
