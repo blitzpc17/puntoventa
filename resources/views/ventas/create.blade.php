@@ -192,7 +192,7 @@ $(document).ready(function() {
         } else {
             carrito.push({
                 id: producto.id,
-                nombre: producto.nombre,
+                nombre: producto.value,
                 precio_venta: producto.precio_venta,
                 existencia: producto.existencia,
                 cantidad: 1,
@@ -211,6 +211,8 @@ $(document).ready(function() {
         
         carrito.forEach((producto, index) => {
             total += producto.subtotal;
+
+            console.log(producto)
             
             const tr = $('<tr>');
             tr.append($('<td>').text(producto.nombre));
@@ -250,7 +252,7 @@ $(document).ready(function() {
             tbody.append(tr);
         });
         
-        $('#total-venta').text('$' + total.toFixed(2));
+        $('#total-venta').text('$' + parseFloat(total).toFixed(2));
         
         // Actualizar cambio
         const efectivo = parseFloat($('#efectivo').val()) || 0;
