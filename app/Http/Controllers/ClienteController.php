@@ -195,4 +195,19 @@ class ClienteController extends Controller
             
         return response()->json($clientes);
     }
+
+    public function searching(Request $request)
+    {
+        $query = Cliente::query();
+        
+        if ($request->has('search')) {
+            $query->where('nombre', 'like', '%' . $request->search . '%');
+        }
+        
+        $rows = $query->select('id', 'nombre as text')
+                        ->orderBy('nombre')
+                        ->get();
+        
+        return response()->json($rows);
+    }
 }

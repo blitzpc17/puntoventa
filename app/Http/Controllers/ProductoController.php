@@ -191,11 +191,11 @@ class ProductoController extends Controller
     {
         $term = $request->get('term');
         
-        $productos = Producto::where('nombre', 'like', '%'.$term.'%')
-            ->orWhere('codigo', 'like', '%'.$term.'%')
-            ->where('existencia', '>', 0)
-            ->get()
-            ->map(function($producto) {
+        //agregar mensaje si 
+        $productos = Producto::where('id', $term)           
+            //->where('existencia', '>', 0)
+            ->first();
+            /*->map(function($producto) {
                 return [
                     'id' => $producto->id,
                     'value' => $producto->nombre,
@@ -205,8 +205,7 @@ class ProductoController extends Controller
                     'existencia' => $producto->existencia,
                     'text' => $producto->nombre . ' (' . $producto->codigo . ') - $' . number_format($producto->precio_venta, 2) . ' - Stock: ' . $producto->existencia
                 ];
-            });
-            
+            });*/
         return response()->json($productos);
     }
     
@@ -283,6 +282,23 @@ class ProductoController extends Controller
                 'message' => 'Error al actualizar el stock: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function searching(Request $request)
+    {
+        $query = Producto::query();
+        
+        if ($request->has('search')) {
+            $query->where('nombre', 'like', '%' . $request->search . '%')
+                ->orWhere('descripcion', 'like', '%' . $request->search . '%')
+                ->orWhere('codigo', 'like', '%' . $request->search . '%');
+        }
+        
+        $products = $query->select('id', DB::RAW("CONCAT(codigo,' ',nombre ) as text"))
+                        ->orderBy('nombre')
+                        ->get();
+        
+        return response()->json($products);
     }
 
 

@@ -10,7 +10,7 @@ class Fiado extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = "Fiados";
+    protected $table = "fiados";
 
     protected $fillable = [
         'cliente_id',

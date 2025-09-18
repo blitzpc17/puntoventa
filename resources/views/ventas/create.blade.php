@@ -1,5 +1,12 @@
 @extends('layout.app')
 
+@push('css')
+
+    <link rel="stylesheet" href="/css/select2.css">
+    <link rel="stylesheet" href="/css/checkbox.css">
+    
+@endpush
+
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="page-title">Registrar Nueva Venta</h1>
@@ -15,11 +22,17 @@
                 <h6 class="m-0 font-weight-bold text-primary">Productos de la Venta</h6>
             </div>
             <div class="card-body">
-                <div class="input-group mb-3">
+                <!--<div class="input-group mb-3">
                     <input type="text" class="form-control" id="search-product" placeholder="Buscar producto por código o nombre...">
                     <button class="btn btn-primary" type="button" id="btn-search-product">
                         <i class="fas fa-search"></i>
                     </button>
+                </div>-->
+
+                <div class="mb-3">
+                    <select id="product-select" class="form-control" style="width: 100%">
+                        <option></option>
+                    </select>
                 </div>
                 
                 <div class="table-responsive">
@@ -57,8 +70,13 @@
             </div>
             <div class="card-body">
                 <form id="venta-form">
+                   
                     <div class="mb-3">
-                        <label for="cliente_id" class="form-label">Cliente</label>
+                         <label class="checkbox-item">
+                            <input type="checkbox" class="checkbox-input" id="chk-publico" checked>
+                            <span class="checkbox-custom">VENTA PÚBLICO GENERAL</span>
+                        </label>
+                        <!--<label for="cliente_id" class="form-label">Cliente</label>
                         <select class="form-select" id="cliente_id" name="cliente_id">
                             <option value="">Cliente no registrado</option>
                             @foreach($clientes as $cliente)
@@ -68,7 +86,14 @@
                                     {{ $cliente->nombre }} - Límite: ${{ number_format($cliente->limite_fiado, 2) }}
                                 </option>
                             @endforeach
-                        </select>
+                        </select>-->
+                            
+                    </div>
+
+                    <div class="mb-3">
+                        <select id="client-select" class="form-control" style="width: 100%">
+                                <option></option>
+                            </select>
                     </div>
                     
                     <div class="mb-3">
@@ -96,8 +121,12 @@
                         <p>Disponible: <span id="disponible-fiado">$0.00</span></p>
                     </div>
                     
-                    <button type="submit" class="btn btn-success w-100" id="btn-registrar">
-                        <i class="fas fa-check me-2"></i>Registrar Venta
+                    <button type="submit" class="btn btn-success w-100 mb-3" id="btn-registrar">
+                        <i class="fas fa-check me-2"></i>Generar Venta
+                    </button>
+
+                      <button type="submit" class="btn btn-success w-100" id="btn-registrar">
+                        <i class="fas fa-print me-2"></i>Generar Venta con Ticket
                     </button>
                 </form>
             </div>
@@ -107,11 +136,51 @@
 @endsection
 
 @section('scripts')
+ <!-- Select2 JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+<!-- Para traducción al español (opcional) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/i18n/es.min.js"></script>
+
+<script src="/js/select2.js"></script>
+
 <script>
+
+   let productoSeleccionado; 
+
+   // select2
+    const productSelect = new Select2ProductManager('#product-select', 'Buscar productos', 'Producto no encontrado', '/api/products' );
+    const clientSelect = new Select2ProductManager('#client-select', 'Buscar clientes', 'Cliente no encontrado', '/api/clients', {initialVisible:false} );
+
+
+
+    document.querySelectorAll('.checkbox-input').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            console.log('Checkbox cambiado:', this.id, this.checked);
+            
+          
+
+            if(this.id == "chk-publico"){                
+                 if(this.checked){
+                    clientSelect.hide();
+                 }else{
+                    clientSelect.show();
+                 }
+            }
+
+
+        });
+    });
+
+    
+
+
 $(document).ready(function() {
     let carrito = [];
     let total = 0;
     
+
+
     // Mostrar/ocultar secciones según tipo de pago
     $('#tipo_pago').change(function() {
         const tipo = $(this).val();
@@ -125,7 +194,7 @@ $(document).ready(function() {
     
     // Actualizar información de fiado
     function actualizarInfoFiado() {
-        const clienteId = $('#cliente_id').val();
+        const clienteId = $('#client-select').val()//$('#cliente_id').val();
         if (!clienteId) {
             Swal.fire('Error', 'Seleccione un cliente para venta a fiado', 'error');
             $('#tipo_pago').val('efectivo').change();
@@ -140,51 +209,63 @@ $(document).ready(function() {
     }
     
     // Buscar producto
-    $('#btn-search-product').click(buscarProducto);
+   /* $('#btn-search-product').click(buscarProducto);
     $('#search-product').on('keypress', function(e) {
         if(e.which === 13) {
             buscarProducto();
             return false;
         }
-    });
+    });*/
+
+    $("#product-select").on('change', function(){
+        buscarProducto()
+    })
     
     function buscarProducto() {
-        const term = $('#search-product').val();
+        const term = $('#product-select').val();//$('#search-product').val();
+
+        console.log(term)
         
-        if (term.length < 2) {
+        /*if (term.length < 2) {
             Swal.fire('Error', 'Ingrese al menos 2 caracteres para buscar', 'error');
             return;
-        }
+        }*/
         
         $.ajax({
             url: "{{ route('ajax.productos.buscar') }}",
             method: 'GET',
             data: { term: term },
             success: function(response) {
-                if (response.length > 0) {
-                    if (response.length === 1) {
-                        agregarAlCarrito(response[0]);
-                    } else {
-                        mostrarModalProductos(response);
-                    }
-                } else {
-                    Swal.fire('Info', 'No se encontraron productos', 'info');
+
+                console.log(response)
+                productoSeleccionado = response;
+
+                var msjError = "";
+                if(response.existencia<=0){
+
+                    msjError = "El producto no cuenta con existencia.";
+                    
+                } else if(response.existencia < response.min_existencia){
+                    msjError = "El producto esta por debajo del stock mínimo, Quedan:"+ response.existencia;
                 }
+
+                if(msjError!=""){
+                    Swal.fire('Advertencia', msjError, 'warning');
+                }else{
+                    agregarAlCarrito(response);
+                }
+
             }
         });
     }
     
     function agregarAlCarrito(producto) {
-        if (producto.existencia <= 0) {
-            Swal.fire('Error', 'Producto sin stock disponible', 'error');
-            return;
-        }
         
         const index = carrito.findIndex(item => item.id === producto.id);
         
         if (index !== -1) {
             if (carrito[index].cantidad >= producto.existencia) {
-                Swal.fire('Error', 'No hay suficiente stock', 'error');
+                Swal.fire('Advertencia', 'No hay suficiente stock', 'warning');
                 return;
             }
             carrito[index].cantidad += 1;
@@ -192,7 +273,7 @@ $(document).ready(function() {
         } else {
             carrito.push({
                 id: producto.id,
-                nombre: producto.value,
+                nombre: producto.nombre,
                 precio_venta: producto.precio_venta,
                 existencia: producto.existencia,
                 cantidad: 1,
@@ -201,7 +282,8 @@ $(document).ready(function() {
         }
         
         actualizarCarrito();
-        $('#search-product').val('');
+        //$('#search-product').val('');
+        $('#product-select').val('');
     }
     
     function actualizarCarrito() {
@@ -278,7 +360,7 @@ $(document).ready(function() {
         
         const tipoPago = $('#tipo_pago').val();
         
-        if (tipoPago === 'fiado' && !$('#cliente_id').val()) {
+        if (tipoPago === 'fiado' && /*!$('#cliente_id').val()*/ !$('#client-select').val()) {
             Swal.fire('Error', 'Se requiere cliente para ventas a fiado', 'error');
             return;
         }
@@ -299,7 +381,7 @@ $(document).ready(function() {
         });
         
         const formData = {
-            cliente_id: $('#cliente_id').val(),
+            cliente_id: $('#client-select').val(),//$('#cliente_id').val(),
             tipo_pago: tipoPago,
             efectivo: $('#efectivo').val(),
             productos: productos

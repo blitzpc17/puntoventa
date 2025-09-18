@@ -9,6 +9,7 @@ use App\Http\Controllers\FiadoController;
 use App\Http\Controllers\CorteCajaController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\CategoriaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,6 +39,11 @@ Route::resource('proveedores', ProveedorController::class);
 // Clientes
 Route::get('clientes/buscar', [ClienteController::class, 'buscar'])->name('clientes.buscar');
 Route::resource('clientes', ClienteController::class);
+
+
+Route::get('categorias-data', [CategoriaController::class, 'getCategorias'])->name('categorias.data');
+Route::resource('categorias', CategoriaController::class);
+
 
 
 // Rutas para AJAX

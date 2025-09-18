@@ -1,0 +1,282 @@
+/* Contenedor principal de Select2 */
+.select2-container--default.select2-container--focus .select2-selection--multiple,
+.select2-container--default.select2-container--focus .select2-selection--single,
+.select2-container--default.select2-container--open .select2-selection--multiple,
+.select2-container--default.select2-container--open .select2-selection--single {
+    border-color: #1976d2 !important;
+    box-shadow: 0 0 0 0.2rem rgba(25, 118, 210, 0.25) !important;
+    outline: 0;
+}
+
+/* Estilo del input cuando está seleccionado */
+.select2-container--default .select2-selection--single {
+    background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%) !important;
+    border: 2px solid #90caf9 !important;
+    border-radius: 8px !important;
+    height: 46px !important;
+    padding: 8px 12px;
+    transition: all 0.3s ease !important;
+}
+
+/* Texto dentro del select */
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: white !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    line-height: 30px !important;
+}
+
+/* Flecha desplegable */
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 44px !important;
+    right: 10px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow b {
+    border-color: white transparent transparent transparent !important;
+}
+
+/* Dropdown desplegable */
+.select2-container--default .select2-dropdown {
+    border: 2px solid #e3f2fd !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.15) !important;
+}
+
+/* Opciones destacadas */
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background: linear-gradient(135deg, #1976d2 0%, #64b5f6 100%) !important;
+    color: white !important;
+    font-weight: 500 !important;
+}
+
+/* Opciones seleccionadas */
+.select2-container--default .select2-results__option[aria-selected=true] {
+    background-color: #e3f2fd !important;
+    color: #1976d2 !important;
+    font-weight: 600 !important;
+    border-left: 4px solid #1976d2 !important;
+}
+
+/* Hover en opciones */
+.select2-container--default .select2-results__option:hover {
+    background-color: #bbdefb !important;
+    color: #0d47a1 !important;
+    transition: all 0.2s ease;
+}
+
+/* Búsqueda dentro del dropdown */
+.select2-container--default .select2-search--dropdown .select2-search__field {
+    border: 2px solid #90caf9 !important;
+    border-radius: 6px !important;
+    padding: 8px 12px !important;
+    font-size: 14px !important;
+    background-color: #fafafa !important;
+}
+
+/* Estilo para múltiple selección */
+.select2-container--default .select2-selection--multiple {
+    min-height: 46px !important;
+    border: 2px solid #bdbdbd !important;
+    border-radius: 8px !important;
+    background: white !important;
+}
+
+/* Tags seleccionados en múltiple */
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background: linear-gradient(135deg, #42a5f5 0%, #90caf9 100%) !important;
+    color: white !important;
+    border: 1px solid #e3f2fd !important;
+    border-radius: 16px !important;
+    padding: 4px 12px !important;
+    font-weight: 500 !important;
+    margin-top: 6px !important;
+    font-size: 12px !important;
+}
+
+/* Close button en tags */
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: white !important;
+    margin-right: 4px !important;
+    font-weight: bold !important;
+    font-size: 14px !important;
+}
+
+/* Placeholder con estilo */
+.select2-container--default .select2-selection--single .select2-selection__placeholder {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-style: italic !important;
+}
+
+/* Header del dropdown */
+.select2-container--default .select2-results__group {
+    background-color: #f5f5f5 !important;
+    color: #424242 !important;
+    font-weight: 600 !important;
+    padding: 8px 12px !important;
+    border-bottom: 1px solid #e0e0e0 !important;
+}
+
+/* Animación de focus sutil */
+@keyframes bluePulse {
+    0% { box-shadow: 0 0 0 0 rgba(25, 118, 210, 0.3); }
+    70% { box-shadow: 0 0 0 8px rgba(25, 118, 210, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(25, 118, 210, 0); }
+}
+
+.select2-container--default.select2-container--focus .select2-selection--single {
+    animation: bluePulse 2s infinite;
+}
+
+/* Scrollbar personalizado para el dropdown */
+.select2-results__options::-webkit-scrollbar {
+    width: 6px;
+}
+
+.select2-results__options::-webkit-scrollbar-track {
+    background: #f5f5f5;
+    border-radius: 10px;
+}
+
+.select2-results__options::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #64b5f6 0%, #1976d2 100%);
+    border-radius: 10px;
+}
+
+.select2-results__options::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #42a5f5 0%, #1565c0 100%);
+}
+
+/* Estado disabled */
+.select2-container--default .select2-selection--single[aria-disabled=true] {
+    background: #eeeeee !important;
+    border-color: #bdbdbd !important;
+    color: #9e9e9e !important;
+}
+
+/* Loading state */
+.select2-container--default .select2-selection__rendered .select2-selection__loading {
+    color: #757575 !important;
+    font-style: italic !important;
+}
+
+/* ================================================== */
+/* ESTILOS PARA OCULTAR Y MOSTRAR SELECT2 */
+/* ================================================== */
+
+/* Estado oculto - completamente invisible y sin espacio */
+.select2-container--default.select2-hidden {
+    opacity: 0 !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    transform: scale(0.8) translateY(-10px) !important;
+    pointer-events: none !important;
+    transition: all 0.3s ease-in-out !important;
+}
+
+/* Estado visible - animación de aparición */
+.select2-container--default.select2-visible {
+    opacity: 1 !important;
+    height: auto !important;
+    width: 100% !important;
+    transform: scale(1) translateY(0) !important;
+    pointer-events: auto !important;
+    transition: all 0.3s ease-in-out !important;
+}
+
+/* Contenedor padre para transiciones suaves */
+.select2-wrapper {
+    position: relative;
+    overflow: hidden;
+    transition: height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+.select2-wrapper.hidden {
+    height: 0 !important;
+    opacity: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+.select2-wrapper.visible {
+    height: auto !important;
+    opacity: 1 !important;
+}
+
+/* Efecto de transición para el dropdown también */
+.select2-dropdown {
+    transition: opacity 0.2s ease-in-out !important;
+}
+
+.select2-hidden ~ .select2-dropdown {
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Estilos para el grupo de control */
+.select2-toggle-control {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%) !important;
+    border: 2px solid #90caf9 !important;
+    border-radius: 10px !important;
+    padding: 15px 20px !important;
+    margin-bottom: 20px !important;
+}
+
+.select2-toggle-checkbox {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    cursor: pointer !important;
+    font-weight: 600 !important;
+    color: #1976d2 !important;
+}
+
+.select2-toggle-checkbox input[type="checkbox"] {
+    width: 18px !important;
+    height: 18px !important;
+    accent-color: #1976d2 !important;
+    cursor: pointer !important;
+}
+
+/* Efecto de hover para el control */
+.select2-toggle-checkbox:hover {
+    color: #1565c0 !important;
+}
+
+/* Indicador de estado */
+.select2-status-indicator {
+    display: inline-block !important;
+    width: 12px !important;
+    height: 12px !important;
+    border-radius: 50% !important;
+    margin-left: 8px !important;
+    background-color: #4caf50 !important;
+    animation: pulseStatus 2s infinite !important;
+}
+
+.select2-hidden ~ .select2-container .select2-status-indicator {
+    background-color: #f44336 !important;
+}
+
+@keyframes pulseStatus {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .select2-container--default.select2-visible {
+        width: 100% !important;
+        margin: 10px 0 !important;
+    }
+    
+    .select2-toggle-control {
+        padding: 12px 15px !important;
+    }
+}

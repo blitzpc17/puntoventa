@@ -1,0 +1,163 @@
+  /* Contenedor principal */
+        .checkbox-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        /* Ocultar checkbox nativo */
+        .checkbox-input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* Estilo personalizado del checkbox */
+        .checkbox-custom {
+            position: relative;
+            padding-left: 35px;
+            cursor: pointer;
+            font-size: 16px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            min-height: 25px;
+            transition: all 0.3s ease;
+        }
+
+        /* Cuadrado del checkbox */
+        .checkbox-custom::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 22px;
+            height: 22px;
+            border: 2px solid #90caf9;
+            border-radius: 4px;
+            background: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(25, 118, 210, 0.1);
+        }
+
+        /* Checkmark (invisible por defecto) */
+        .checkbox-custom::after {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 50%;
+            transform: translateY(-60%) rotate(45deg) scale(0);
+            width: 6px;
+            height: 12px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transition: all 0.2s ease;
+            opacity: 0;
+        }
+
+        /* Checkbox checked */
+        .checkbox-input:checked + .checkbox-custom::before {
+            background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+            border-color: #1976d2;
+            box-shadow: 0 3px 8px rgba(25, 118, 210, 0.3);
+        }
+
+        .checkbox-input:checked + .checkbox-custom::after {
+            transform: translateY(-60%) rotate(45deg) scale(1);
+            opacity: 1;
+        }
+
+        /* Hover effects */
+        .checkbox-custom:hover::before {
+            border-color: #42a5f5;
+            box-shadow: 0 3px 8px rgba(25, 118, 210, 0.2);
+        }
+
+        .checkbox-input:focus + .checkbox-custom::before {
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
+            border-color: #1976d2;
+        }
+
+        /* Estado disabled */
+        .checkbox-input:disabled + .checkbox-custom {
+            color: #bdbdbd;
+            cursor: not-allowed;
+        }
+
+        .checkbox-input:disabled + .checkbox-custom::before {
+            background: #f5f5f5;
+            border-color: #e0e0e0;
+            box-shadow: none;
+        }
+
+        /* Variantes de tamaño */
+        .checkbox-lg .checkbox-custom::before {
+            width: 26px;
+            height: 26px;
+        }
+
+        .checkbox-lg .checkbox-custom::after {
+            left: 9px;
+            width: 7px;
+            height: 13px;
+        }
+
+        .checkbox-lg .checkbox-custom {
+            font-size: 18px;
+            padding-left: 40px;
+        }
+
+        /* Variante con label a la derecha */
+        .checkbox-right {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .checkbox-right .checkbox-custom {
+            order: 2;
+            padding-left: 0;
+            padding-right: 35px;
+        }
+
+        .checkbox-right .checkbox-custom::before {
+            left: auto;
+            right: 0;
+        }
+
+        .checkbox-right .checkbox-custom::after {
+            left: auto;
+            right: 7px;
+        }
+
+        /* Grupo de checkboxes */
+        .checkbox-group {
+            background: #f8fdff;
+            border: 1px solid #e3f2fd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .checkbox-group-title {
+            color: #1976d2;
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        /* Efecto de animación */
+        @keyframes checkmarkPop {
+            0% { transform: translateY(-60%) rotate(45deg) scale(0); }
+            50% { transform: translateY(-60%) rotate(45deg) scale(1.2); }
+            100% { transform: translateY(-60%) rotate(45deg) scale(1); }
+        }
+
+        .checkbox-input:checked + .checkbox-custom::after {
+            animation: checkmarkPop 0.3s ease-out;
+        }

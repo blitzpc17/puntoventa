@@ -2,32 +2,13 @@
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="page-title">Gestión de Proveedores</h1>
+    <h1 class="page-title">Gestión de Categorías</h1>
     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#proveedorModal">
-        <i class="fas fa-plus me-2"></i>Nuevo Proveedor
+        <i class="fas fa-plus me-2"></i>Nueva Categoría
     </button>
 </div>
 
-<!-- Filtros -->
-<div class="card shadow mb-4">
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-8">
-                <div class="input-group">
-                    <input type="text" class="form-control" id="search-input" placeholder="Buscar proveedores...">
-                    <button class="btn btn-outline-secondary" type="button" id="btn-search">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <button class="btn btn-outline-secondary w-100" id="btn-limpiar-busqueda">
-                    <i class="fas fa-times me-2"></i>Limpiar Búsqueda
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 <!-- Tarjetas de Resumen -->
 <div class="row mb-4">
@@ -37,7 +18,7 @@
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                            Total Proveedores
+                            Total Categorías
                         </div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-proveedores">0</div>
                     </div>
@@ -47,76 +28,18 @@
                 </div>
             </div>
         </div>
-    </div>
-    <div class="col-xl-3 col-md-6">
-        <div class="card border-left-success shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                            Proveedores Activos
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="proveedores-activos">0</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl-3 col-md-6">
-        <div class="card border-left-info shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                            Productos por Proveedores
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-productos">0</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-boxes fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl-3 col-md-6">
-        <div class="card border-left-warning shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                            Compras Totales
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-compras">$0.00</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    </div>  
 </div>
 
 <!-- Tabla de proveedores -->
 <div class="card shadow mb-4">
     <div class="card-body">
         <div class="table-responsive">
-            <table id="proveedores-table" class="table table-bordered table-hover w-100">
+            <table id="categorias-table" class="table table-bordered table-hover w-100">
                 <thead>
                     <tr>
-                        <th>ID</th>
+                        <th>#</th>
                         <th>Nombre</th>
-                        <th>Contacto</th>
-                        <th>Teléfono</th>
-                        <th>Email</th>
-                        <th>RFC</th>
-                        <th>Productos</th>
-                        <th>Compras</th>
-                        <th>Última Compra</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -130,55 +53,19 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalTitle">Agregar Proveedor</h5>
+                <h5 class="modal-title" id="modalTitle">Agregar Categoría</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="proveedorForm">
                 <div class="modal-body">
                     <input type="hidden" id="proveedor_id" name="id">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="nombre" class="form-label">Nombre *</label>
-                                <input type="text" class="form-control" id="nombre" name="nombre" required>
-                                <div class="invalid-feedback" id="nombre-error"></div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="rfc" class="form-label">RFC</label>
-                                <input type="text" class="form-control" id="rfc" name="rfc" maxlength="13">
-                                <div class="invalid-feedback" id="rfc-error"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="contacto" class="form-label">Persona de Contacto</label>
-                                <input type="text" class="form-control" id="contacto" name="contacto">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="telefono" class="form-label">Teléfono</label>
-                                <input type="tel" class="form-control" id="telefono" name="telefono">
-                            </div>
-                        </div>
-                    </div>
                     <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email">
-                        <div class="invalid-feedback" id="email-error"></div>
+                        <label for="nombre" class="form-label">Nombre *</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" required>
+                        <div class="invalid-feedback" id="nombre-error"></div>
                     </div>
-                    <div class="mb-3">
-                        <label for="direccion" class="form-label">Dirección</label>
-                        <textarea class="form-control" id="direccion" name="direccion" rows="2"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="notas" class="form-label">Notas</label>
-                        <textarea class="form-control" id="notas" name="notas" rows="3"></textarea>
-                    </div>
+                   
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -194,7 +81,7 @@
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Detalles del Proveedor</h5>
+                <h5 class="modal-title">Detalles de la categoría</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -205,50 +92,19 @@
                             <tr>
                                 <th>Nombre:</th>
                                 <td id="detalle-nombre"></td>
-                            </tr>
-                            <tr>
-                                <th>RFC:</th>
-                                <td id="detalle-rfc"></td>
-                            </tr>
-                            <tr>
-                                <th>Contacto:</th>
-                                <td id="detalle-contacto"></td>
-                            </tr>
-                            <tr>
-                                <th>Teléfono:</th>
-                                <td id="detalle-telefono"></td>
-                            </tr>
-                            <tr>
-                                <th>Email:</th>
-                                <td id="detalle-email"></td>
-                            </tr>
+                            </tr>                           
                         </table>
                     </div>
                     <div class="col-md-6">
                         <h6>Estadísticas</h6>
                         <table class="table table-sm">
                             <tr>
-                                <th>Total Productos:</th>
+                                <th>Productos relacionados:</th>
                                 <td id="detalle-total-productos"></td>
-                            </tr>
-                            <tr>
-                                <th>Total Compras:</th>
-                                <td id="detalle-total-compras"></td>
-                            </tr>
-                            <tr>
-                                <th>Última Compra:</th>
-                                <td id="detalle-ultima-compra"></td>
-                            </tr>
+                            </tr>                           
                         </table>
                     </div>
-                </div>
-                <div class="row mt-4">
-                    <div class="col-md-12">
-                        <h6>Dirección y Notas</h6>
-                        <p id="detalle-direccion" class="text-muted"></p>
-                        <p id="detalle-notas" class="text-muted"></p>
-                    </div>
-                </div>
+                </div>             
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
@@ -262,7 +118,7 @@
 <script>
 $(document).ready(function() {
     // DataTable configuration
-    var table = $('#proveedores-table').DataTable({
+    var table = $('#categorias-table').DataTable({
         processing: true,
         serverSide: true,
         ajax: {
@@ -272,15 +128,15 @@ $(document).ready(function() {
             }
         },
         columns: [
-            { data: 'id', name: 'id' },
+            { data: null, name: 'consecutivo',  
+                render: function (data, type, row, meta) {
+                    return meta.settings._iDisplayStart + meta.row + 1;
+                },
+                orderable: false,
+                searchable: false
+
+            },
             { data: 'nombre', name: 'nombre' },
-            { data: 'contacto', name: 'contacto', defaultContent: 'N/A' },
-            { data: 'telefono', name: 'telefono', defaultContent: 'N/A' },
-            { data: 'email', name: 'email', defaultContent: 'N/A' },
-            { data: 'rfc', name: 'rfc', defaultContent: 'N/A' },
-            { data: 'productos_count', name: 'productos_count', searchable: false },
-            { data: 'compras_count', name: 'compras_count', searchable: false },
-            { data: 'ultima_compra', name: 'ultima_compra', searchable: false },
             { data: 'action', name: 'action', orderable: false, searchable: false }
         ],
         language: {

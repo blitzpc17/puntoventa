@@ -9,7 +9,7 @@ class AbonoFiado extends Model
 {
     use HasFactory;
 
-    protected $table = "AbonoFiado";
+    protected $table = "abonos_fiado";
 
     protected $fillable = [
         'fiado_id',
