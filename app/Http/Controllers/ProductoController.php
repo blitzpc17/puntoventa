@@ -8,6 +8,11 @@ use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\DB;
 
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ProductsLayoutExport;
+use App\Imports\ProductsImport;
+
+
 class ProductoController extends Controller
 {
     public function index(Request $request)
@@ -300,6 +305,84 @@ class ProductoController extends Controller
         
         return response()->json($products);
     }
+
+    public function downloadLayout(){
+          return Excel::download(new ProductsLayoutExport, 'layout_productos.xlsx');
+    }
+
+    public function previewView(){
+        return view('productos.preview-import');
+    }
+
+    public function dataPreview(Request $request)
+{
+    $request->validate([
+        'layout' => 'required|mimes:xlsx,xls,csv|max:10240'
+    ]);
+
+    try {
+        $file = $request->file('layout');
+        $data = Excel::toCollection(new ProductsImport(), $file);
+        
+        if ($data->isEmpty()) {
+            return response()->json([
+                'code' => 400,
+                'success' => false,
+                'error' => 'El archivo no contiene hojas de cálculo.'
+            ], 400);
+        }
+
+        $rows = $data->first();
+        
+        if ($rows->isEmpty()) {
+            return response()->json([
+                'code' => 400,
+                'success' => false,
+                'error' => 'La hoja de cálculo está vacía.'
+            ], 400);
+        }
+
+        /*$headers = $rows[0];//->first();
+        dd($headers);
+        $dataRows = $rows->slice(1)->filter(function($row) {
+            // Filtrar filas vacías
+            return $row->filter()->isNotEmpty();
+        })->values();
+
+        // Validar estructura básica        
+        $requiredHeaders = ['CODIGO', 'PROVEEDOR', 'CATEGORIA', 'NOMBRE', 'DESCRIPCION', 'PRECIO_COMPRA', 'PRECIO_VENTA', 'CANTIDAD', 'EXISTENCIA_MINIMA'];
+        $missingHeaders = array_diff($requiredHeaders, $headers->toArray());
+
+        dd($missingHeaders);
+        
+        if (!empty($missingHeaders)) {
+            return response()->json([
+                'code' => 400,
+                'success' => false,
+                'error' => 'Faltan columnas requeridas: ' . implode(', ', $missingHeaders),
+                'headers_found' => $headers
+            ], 400);
+        }*/
+
+        return response()->json([
+            'code' => 200,
+            'success' => true,           
+            'products' => $rows,//$dataRows,
+            'filename' => $file->getClientOriginalName(),
+            'total_rows' => $rows->count(),//$dataRows->count(),
+            'message' => 'Visualización preliminar.'
+        ]);
+        
+    } catch (\Exception $e) {
+        \Log::error('Error en dataPreview: ' . $e->getMessage());
+        
+        return response()->json([
+            'code' => 500,
+            'success' => false,
+            'error' => 'Error al procesar el archivo: ' . $e->getMessage()
+        ], 500);
+    }
+}
 
 
 

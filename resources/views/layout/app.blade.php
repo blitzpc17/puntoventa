@@ -18,7 +18,6 @@
     @stack('css')
     
 
-
     <style>
         :root {
             --primary-color: #4e73df;
@@ -33,12 +32,14 @@
         body {
             background-color: var(--light-bg);
             font-family: 'Nunito', sans-serif;
+            overflow-x: hidden;
         }
         
         .sidebar {
             min-height: 100vh;
             background: linear-gradient(180deg, var(--primary-color) 10%, #224abe 100%);
             color: white;
+            transition: transform 0.3s ease;
         }
         
         .sidebar .nav-link {
@@ -76,15 +77,82 @@
             color: var(--secondary-color);
             font-weight: 700;
         }
+        
+        /* Estilos para el botón hamburguesa */
+        .navbar-toggler {
+            border: none;
+            font-size: 1.25rem;
+            background: transparent;
+            color: var(--primary-color);
+        }
+        
+        .navbar-toggler:focus {
+            box-shadow: none;
+            outline: none;
+        }
+        
+        /* Overlay para móviles */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1040;
+            display: none;
+        }
+        
+        /* Ajustes responsivos */
+        @media (max-width: 767.98px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 280px;
+                z-index: 1050;
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                width: 100%;
+            }
+            
+            .mobile-header {
+                display: flex;
+                align-items: center;
+                padding: 1rem;
+                background-color: white;
+                box-shadow: 0 2px 4px rgba(0,0,0,.1);
+                margin-bottom: 1rem;
+            }
+        }
+        
+        @media (min-width: 768px) {
+            .mobile-header {
+                display: none;
+            }
+            
+            .sidebar-overlay {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Overlay para móviles -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 sidebar px-0">
+            <div class="col-md-3 col-lg-2 sidebar px-0" id="sidebar">
                 <div class="text-center p-4">
-                    <h4>Papelería System</h4>
+                    <h4>Punto de venta</h4>
                 </div>
                 <ul class="nav flex-column">
                     <li class="nav-item">
@@ -139,7 +207,15 @@
             </div>
 
             <!-- Main content -->
-            <div class="col-md-9 col-lg-10 ms-sm-auto px-4 py-4">
+            <div class="col-md-9 col-lg-10 ms-sm-auto px-4 py-4 main-content">
+                <!-- Header móvil con botón hamburguesa -->
+                <div class="mobile-header">
+                    <button class="navbar-toggler me-3" type="button" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h4 class="mb-0">Punto de venta</h4>
+                </div>
+                
                 @yield('content')
             </div>
         </div>
@@ -161,6 +237,41 @@
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
+        });
+        
+        // Funcionalidad para el menú hamburguesa
+        $(document).ready(function() {
+            const sidebar = $('#sidebar');
+            const sidebarToggle = $('#sidebarToggle');
+            const sidebarOverlay = $('#sidebarOverlay');
+            
+            // Alternar menú al hacer clic en el botón hamburguesa
+            sidebarToggle.on('click', function() {
+                sidebar.toggleClass('show');
+                sidebarOverlay.fadeToggle(200);
+            });
+            
+            // Cerrar menú al hacer clic en el overlay
+            sidebarOverlay.on('click', function() {
+                sidebar.removeClass('show');
+                sidebarOverlay.fadeOut(200);
+            });
+            
+            // Cerrar menú al hacer clic en un enlace (solo en móviles)
+            if ($(window).width() < 768) {
+                sidebar.on('click', 'a.nav-link', function() {
+                    sidebar.removeClass('show');
+                    sidebarOverlay.fadeOut(200);
+                });
+            }
+            
+            // Ajustar comportamiento al cambiar el tamaño de la ventana
+            $(window).on('resize', function() {
+                if ($(window).width() >= 768) {
+                    sidebar.removeClass('show');
+                    sidebarOverlay.hide();
+                }
+            });
         });
     </script>
     

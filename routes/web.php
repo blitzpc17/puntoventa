@@ -26,6 +26,10 @@ use App\Http\Controllers\CategoriaController;
 Route::get('productos/buscar', [ProductoController::class, 'buscar'])->name('productos.buscar');
 Route::get('productos/barcode', [ProductoController::class, 'getByBarcode'])->name('productos.barcode');
 Route::post('productos/{id}/stock', [ProductoController::class, 'updateStock'])->name('productos.stock.update');
+Route::get('productos/importar', [ProductoController::class, 'previewView'])->name('productos.importar');
+Route::get('productos/download-layout', [ProductoController::class, 'downloadLayout'])->name('productos.download.layout');
+Route::post('productos/masivo/preview', [ProductoController::class, 'dataPreview'])->name('productos.import.preview');
+Route::post('productos/masivo/upload', [ProductoController::class, 'uploadMasivo'])->name('productos.import.save');
 Route::resource('productos', ProductoController::class);
 
 
