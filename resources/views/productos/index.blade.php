@@ -7,7 +7,7 @@
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#productoModal">
             <i class="fas fa-plus me-2"></i> Nuevo Producto
         </button>
-        <a href="{{route()}}" class="btn btn-primary">
+        <a href="{{route('productos.importar')}}" class="btn btn-primary">
             <i class="fas fa-upload me-2"></i> Carga Masiva
         </a>
         <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#stockModal">
