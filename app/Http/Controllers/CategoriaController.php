@@ -9,80 +9,115 @@ use Illuminate\Support\Facades\DB;
 
 class CategoriaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        if ($request->ajax()) {
+            $categorias = Categoria::select('*');
+            
+            return DataTables::of($categorias)                
+                ->addColumn('action', function($cat) {
+                    return '<button class="btn btn-sm btn-warning edit" data-id="'.$cat->id.'">
+                                <i class="fas fa-edit"></i>
+                            </button>';
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+        
         return view('categorias.index');
     }
 
-    public function getCategorias()
+    public function store(Request $request)
     {
-        $categorias = Categoria::all();
-        return response()->json(['data' => $categorias]);
-    }
-
-    public function store(Request $request): JsonResponse
-    {
-        $request->validate([
-            'nombre' => 'required|string|max:255|unique:categoria_productos,nombre'
-        ]);
-
+        DB::beginTransaction();
+        
         try {
-            $categoria = Categoria::create($request->all());
+            $request->validate([
+                'nombre' => 'required|string|max:100|unique:categorias_producto,nombre',                
+            ], [
+                'nombre.unique' => 'Ya existe una categoría con este nombre',
+            ]);          
+
+            $categoria= Categoria::create($request->all());
+
+            DB::commit();
+
             return response()->json([
                 'success' => true,
-                'message' => 'Categoría creada exitosamente',
+                'message' => 'Categoría creada correctamente',
                 'data' => $categoria
-            ], 201);
+            ]);
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            throw $e;
         } catch (\Exception $e) {
+            DB::rollBack();
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Error al crear la categoría: ' . $e->getMessage()
+                'message' => 'Error al crear la categoria: ' . $e->getMessage()
             ], 500);
         }
     }
 
-    public function show(Categoria $categoria): JsonResponse
+    public function show($id)
     {
-        return response()->json([
-            'success' => true,
-            'data' => $categoria
-        ]);
+        $categoria = Categoria::findOrFail($id);
+        return response()->json($categoria);
     }
 
-    public function update(Request $request, Categoria $categoria): JsonResponse
+    public function update(Request $request, $id)
     {
-        $request->validate([
-            'nombre' => 'required|string|max:255|unique:categoria_productos,nombre,' . $categoria->id
-        ]);
-
+        DB::beginTransaction();
+        
         try {
+            $categoria = Categoria::findOrFail($id);
+            
+            $request->validate([
+                'nombre' => 'required|string|max:100|unique:categorias_producto,nombre,' . $id,              
+            ], [
+                'nombre.unique' => 'Ya existe una cateogoría con este nombre',
+            ]);
+
             $categoria->update($request->all());
+
+            DB::commit();
+
             return response()->json([
                 'success' => true,
-                'message' => 'Categoría actualizada exitosamente',
-                'data' => $categoria
+                'message' => 'Categoría actualizada correctamente'
             ]);
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            throw $e;
         } catch (\Exception $e) {
+            DB::rollBack();
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Error al actualizar la categoría: ' . $e->getMessage()
+                'message' => 'Error al actualizar el proveedor: ' . $e->getMessage()
             ], 500);
         }
     }
-
-    public function destroy(Categoria $categoria): JsonResponse
+   
+    
+    public function buscar(Request $request)
     {
-        try {
-            $categoria->delete();
-            return response()->json([
-                'success' => true,
-                'message' => 'Categoría eliminada exitosamente'
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al eliminar la categoría: ' . $e->getMessage()
-            ], 500);
-        }
+        $term = $request->get('term');
+        
+        $categorias = Categoria::
+                                where('nombre', 'like', '%'.$term.'%')        
+                                ->get()
+                                ->map(function($cat) {
+                                    return [
+                                        'id' => $cat->id,
+                                        'value' => $cat->id,
+                                        'text' => $cat->nombre 
+                                    ];
+                                });
+            
+        return response()->json($categorias);
     }
 }

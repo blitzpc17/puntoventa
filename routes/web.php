@@ -44,7 +44,7 @@ Route::resource('proveedores', ProveedorController::class);
 Route::get('clientes/buscar', [ClienteController::class, 'buscar'])->name('clientes.buscar');
 Route::resource('clientes', ClienteController::class);
 
-
+//categorias
 Route::get('categorias-data', [CategoriaController::class, 'getCategorias'])->name('categorias.data');
 Route::resource('categorias', CategoriaController::class);
 

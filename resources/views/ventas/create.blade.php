@@ -30,6 +30,7 @@
                 </div>-->
 
                 <div class="mb-3">
+                    <label for="">Buscar productos:</label>
                     <select id="product-select" class="form-control" style="width: 100%">
                         <option></option>
                     </select>

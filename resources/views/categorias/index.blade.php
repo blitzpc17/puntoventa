@@ -3,7 +3,7 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="page-title">Gestión de Categorías</h1>
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#proveedorModal">
+    <button class="btn btn-primary" id="btn-add">
         <i class="fas fa-plus me-2"></i>Nueva Categoría
     </button>
 </div>
@@ -18,7 +18,7 @@
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                            Total Categorías
+                            Número de Categorías
                         </div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-proveedores">0</div>
                     </div>
@@ -49,8 +49,8 @@
 </div>
 
 <!-- Modal para agregar/editar proveedor -->
-<div class="modal fade" id="proveedorModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+<div class="modal fade" id="proveedorModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="modalTitle">Agregar Categoría</h5>
@@ -76,42 +76,9 @@
     </div>
 </div>
 
-<!-- Modal para ver detalles -->
-<div class="modal fade" id="detalleModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Detalles de la categoría</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6>Información General</h6>
-                        <table class="table table-sm">
-                            <tr>
-                                <th>Nombre:</th>
-                                <td id="detalle-nombre"></td>
-                            </tr>                           
-                        </table>
-                    </div>
-                    <div class="col-md-6">
-                        <h6>Estadísticas</h6>
-                        <table class="table table-sm">
-                            <tr>
-                                <th>Productos relacionados:</th>
-                                <td id="detalle-total-productos"></td>
-                            </tr>                           
-                        </table>
-                    </div>
-                </div>             
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-            </div>
-        </div>
-    </div>
-</div>
+
+
+
 @endsection
 
 @section('scripts')
@@ -122,7 +89,7 @@ $(document).ready(function() {
         processing: true,
         serverSide: true,
         ajax: {
-            url: "{{ route('proveedores.index') }}",
+            url: "{{ route('categorias.index') }}",
             data: function (d) {
                 d.search = $('#search-input').val();
             }
@@ -145,11 +112,10 @@ $(document).ready(function() {
         drawCallback: function(settings) {
             // Actualizar estadísticas
             var data = settings.json;
+            console.log(data)
+          //  alert(data)
             if (data) {
-                $('#total-proveedores').text(data.recordsTotal || 0);
-                $('#proveedores-activos').text(data.recordsTotal || 0);
-                $('#total-productos').text(data.totalProductos || 0);
-                $('#total-compras').text('$' + (data.totalCompras || 0).toFixed(2));
+                $('#total-proveedores').text(data.recordsTotal || 0);             
             }
         }
     });
@@ -167,64 +133,42 @@ $(document).ready(function() {
         $('#search-input').val('');
         table.ajax.reload();
     });
-
-    // Open modal for new proveedor
-    $('#proveedorModal').on('show.bs.modal', function() {
-        $('#modalTitle').text('Agregar Proveedor');
+   
+    $('#btn-add').click(function(){
+          $('#modalTitle').text('Agregar Categoría');
         $('#proveedorForm')[0].reset();
         $('#proveedor_id').val('');
         $('.invalid-feedback').text('').hide();
         $('.is-invalid').removeClass('is-invalid');
-    });
+            $('#proveedorModal').modal('show');
+    })
 
     // Edit proveedor
     $(document).on('click', '.edit', function() {
         var id = $(this).data('id');
         
-        $.get("{{ route('proveedores.index') }}/" + id, function(data) {
-            $('#modalTitle').text('Editar Proveedor');
+        $.get("{{ route('categorias.index') }}/" + id, function(data) {
+            console.log(data)
+            $('#modalTitle').text('Editar Categoría');
             $('#proveedor_id').val(data.id);
-            $('#nombre').val(data.nombre);
-            $('#rfc').val(data.rfc);
-            $('#contacto').val(data.contacto);
-            $('#telefono').val(data.telefono);
-            $('#email').val(data.email);
-            $('#direccion').val(data.direccion);
-            $('#notas').val(data.notas);
+            console.log(data.id)
+            $('#nombre').val(data.nombre);        
             $('#proveedorModal').modal('show');
         });
     });
-
-    // View proveedor details
-    $(document).on('dblclick', '#proveedores-table tbody tr', function() {
-        var data = table.row(this).data();
-        if (data) {
-            $.get("{{ route('proveedores.index') }}/" + data.id, function(proveedor) {
-                $('#detalle-nombre').text(proveedor.nombre);
-                $('#detalle-rfc').text(proveedor.rfc || 'N/A');
-                $('#detalle-contacto').text(proveedor.contacto || 'N/A');
-                $('#detalle-telefono').text(proveedor.telefono || 'N/A');
-                $('#detalle-email').text(proveedor.email || 'N/A');
-                $('#detalle-direccion').text(proveedor.direccion || 'Sin dirección');
-                $('#detalle-notas').text(proveedor.notas || 'Sin notas');
-                $('#detalle-total-productos').text(proveedor.productos_count);
-                $('#detalle-total-compras').text('$' + parseFloat(proveedor.total_compras??0).toFixed(2));
-                $('#detalle-ultima-compra').text(proveedor.ultima_compra || 'Nunca');
-                $('#detalleModal').modal('show');
-            });
-        }
-    });
+    
 
     // Save proveedor
     $('#proveedorForm').on('submit', function(e) {
         e.preventDefault();
         
         var formData = $(this).serialize();
-        var url = "{{ route('proveedores.store') }}";
+        var url = "{{ route('categorias.store') }}";
+        console.log(url)
         var method = 'POST';
         
         if ($('#proveedor_id').val()) {
-            url = "{{ route('proveedores.index') }}/" + $('#proveedor_id').val();
+            url = "{{ route('categorias.index') }}/" + $('#proveedor_id').val();
             method = 'PUT';
         }
         
@@ -257,35 +201,8 @@ $(document).ready(function() {
         $(this).next('.invalid-feedback').hide();
     });
 
-    // Delete proveedor
-    $(document).on('click', '.delete', function() {
-        var id = $(this).data('id');
-        
-        Swal.fire({
-            title: '¿Estás seguro?',
-            text: "Esta acción no se puede deshacer",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: "{{ route('proveedores.index') }}/" + id,
-                    method: 'DELETE',
-                    success: function(response) {
-                        table.ajax.reload();
-                        Swal.fire('Eliminado', response.message, 'success');
-                    },
-                    error: function(xhr) {
-                        Swal.fire('Error', xhr.responseJSON.message, 'error');
-                    }
-                });
-            }
-        });
-    });
+
+    
 });
 </script>
 @endsection
