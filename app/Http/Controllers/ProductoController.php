@@ -342,28 +342,7 @@ class ProductoController extends Controller
                 ], 400);
             }
 
-            /*$headers = $rows[0];//->first();
-            dd($headers);
-            $dataRows = $rows->slice(1)->filter(function($row) {
-                // Filtrar filas vacías
-                return $row->filter()->isNotEmpty();
-            })->values();
-
-            // Validar estructura básica        
-            $requiredHeaders = ['CODIGO', 'PROVEEDOR', 'CATEGORIA', 'NOMBRE', 'DESCRIPCION', 'PRECIO_COMPRA', 'PRECIO_VENTA', 'CANTIDAD', 'EXISTENCIA_MINIMA'];
-            $missingHeaders = array_diff($requiredHeaders, $headers->toArray());
-
-            dd($missingHeaders);
-            
-            if (!empty($missingHeaders)) {
-                return response()->json([
-                    'code' => 400,
-                    'success' => false,
-                    'error' => 'Faltan columnas requeridas: ' . implode(', ', $missingHeaders),
-                    'headers_found' => $headers
-                ], 400);
-            }*/
-
+         
             return response()->json([
                 'code' => 200,
                 'success' => true,           
@@ -382,6 +361,67 @@ class ProductoController extends Controller
                 'error' => 'Error al procesar el archivo: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function uploadMasivo(Request $request){
+        
+        DB::beginTransaction();
+
+        try {
+            $productos = collect(json_decode($request->products, true));
+            $tamanoLote = 100;
+            
+            $lotes = $productos->chunk($tamanoLote);
+            $totalProcesados = 0;
+            
+            foreach ($lotes as $lote) {
+                $productosLote = $lote->map(function ($producto) {
+                    $data = [
+                        "codigo" => $producto['codigo'],  // Usar corchetes en lugar de ->
+                        "proveedor_Id" => $producto['proveedor'],
+                        "categoriaId" => $producto['categoria'],
+                        "nombre" => $producto['nombre'],
+                        "descripcion" => $producto['descripcion'],
+                        "precio_compra" => $producto['precio_compra'],
+                        "precio_venta" => $producto['precio_venta'],
+                        "existencia" => $producto['cantidad'],
+                        "min_existencia" => $producto['existencia_minima']
+                    ];
+                    return array_merge($data, [
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                });
+                
+                Producto::upsert(
+                    $productosLote->toArray(),
+                    ['codigo'],
+                    ['codigo','proveedor_Id', 'categoriaId', 'nombre', 'descripcion', 'precio_compra', 'precio_venta', 'existencia', 'min_existencia', 'updated_at']
+                );
+                
+                $totalProcesados += $lote->count();
+            }
+            
+            DB::commit();
+
+            dd([
+                'message' => 'UPSERT por lotes completado',
+                'total_procesados' => $totalProcesados,
+                'lotes_procesados' => $lotes->count()
+            ]);
+            
+            return response()->json([
+                'message' => 'UPSERT por lotes completado',
+                'total_procesados' => $totalProcesados,
+                'lotes_procesados' => $lotes->count()
+            ]);
+            
+        } catch (\Exception $e) {
+             \Log::error('Error en upsert: ' . $e->getMessage());
+            DB::rollBack();
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+
     }
 
 

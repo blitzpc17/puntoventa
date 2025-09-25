@@ -67,6 +67,19 @@ class CategoriaController extends Controller
         return response()->json($categoria);
     }
 
+    public function all(){
+        $categorias = Categoria::all()
+          ->map(function($cat) {
+                return [
+                    'id' => $cat->id,
+                  //  'value' => $cat->nombre,
+                    'text' => $cat->nombre 
+                ];
+            });
+        $data = array("success"=>true, "data"=>$categorias);
+        return response()->json($data);
+    }
+
     public function update(Request $request, $id)
     {
         DB::beginTransaction();

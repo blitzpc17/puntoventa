@@ -4,7 +4,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="page-title">Gestión de Productos</h1>
     <div>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#productoModal">
+        <button class="btn btn-primary" id="btn-add">
             <i class="fas fa-plus me-2"></i> Nuevo Producto
         </button>
         <a href="{{route('productos.importar')}}" class="btn btn-primary">
@@ -311,11 +311,18 @@ $(document).ready(function() {
     });
 
     // Open modal for new product
-    $('#productoModal').on('show.bs.modal', function() {
+   /* $('#productoModal').on('show.bs.modal', function() {
         $('#modalTitle').text('Agregar Producto');
         $('#productoForm')[0].reset();
         $('#producto_id').val('');
-    });
+    });*/
+    $('#btn-add').click(function(){
+        $('#modalTitle').text('Agregar Producto');
+        $('#productoForm')[0].reset();
+        $('#producto_id').val('');
+        $('#productoModal').modal('show');
+    })
+
 
     // Edit product
     $(document).on('click', '.edit', function() {

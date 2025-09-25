@@ -16,9 +16,7 @@ class ProductsImport implements ToModel, WithHeadingRow//, WithValidation, WithB
    public function model(array $row)
     {
         return new Product([
-            'codigo'        => $row['CODIGO'] ?? $row['CODIGO'] ?? null,
-            'proveedor'         => $row['PROVEEDOR'] ?? $row['PROVEEDOR'] ?? null,
-            'categoria' => $row['CATEGORIA'] ?? $row['CATEGORIA'] ?? null,
+            'codigo'        => $row['CODIGO'] ?? $row['CODIGO'] ?? null,                    
             'nombre'       => $row['NOMBRE'] ?? $row['NOMBRE'] ??   null,
             'descripcion'       => $row['DESCRIPCION'] ?? $row['DESCRIPCION'] ??   null,
             'precioVenta'       => $row['PRECIO_VENTA'] ?? $row['PRECIO_VENTA'] ?? 0,

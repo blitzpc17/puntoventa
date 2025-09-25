@@ -204,4 +204,21 @@ class ProveedorController extends Controller
         
         return response()->json($proveedor->compras);
     }
+
+    public function all(){
+        $proveedores = Proveedor::all()
+          ->map(function($prov) {
+                return [
+                    'id' => $prov->id,
+                    'text' => $prov->nombre 
+                ];
+            });
+        $data = array("success"=>true, "data"=>$proveedores);
+        return response()->json($data);
+    }
+
+
+
+
+
 }

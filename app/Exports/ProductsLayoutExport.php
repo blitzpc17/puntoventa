@@ -19,22 +19,21 @@ class ProductsLayoutExport implements FromCollection, WithHeadings, WithStyles, 
     public function headings(): array
     {
         return [
-            'CODIGO',
-            'PROVEEDOR',
-            'CATEGORIA', 
+            'CODIGO B/CLAVE',       
             'NOMBRE',
             'DESCRIPCION',
             'PRECIO_COMPRA',
             'PRECIO_VENTA',
-            'CANTIDAD',
-            'EXISTENCIA_MINIMA'
+            'PRECIO_MAYOREO',
+            'INVENTARIO', //CANTIDAD
+            'INVENTARIO_MINIMO'
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
         // Estilo para los encabezados
-        $sheet->getStyle('A1:I1')->applyFromArray([
+        $sheet->getStyle('A1:H1')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['rgb' => 'FFFFFF'],
@@ -52,7 +51,7 @@ class ProductsLayoutExport implements FromCollection, WithHeadings, WithStyles, 
         ]);
 
         // Autoajustar el ancho de las columnas
-        foreach(range('A', 'I') as $column) {
+        foreach(range('A', 'H') as $column) {
             $sheet->getColumnDimension($column)->setAutoSize(true);
         }
 

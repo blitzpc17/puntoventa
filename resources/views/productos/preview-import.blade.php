@@ -80,6 +80,15 @@
     height: 29px !important;
 }
 
+.select2-results__option--highlighted {
+    background-color: #007bff !important;
+    color: white !important;
+}
+
+.select2-selection--multiple {
+    min-height: 31px !important;
+}
+
 .btn-sm {
     padding: 0.25rem 0.5rem;
     font-size: 0.775rem;
@@ -91,7 +100,7 @@
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="page-title">Carga masiva de Productos</h1>
+    <h1 class="page-title">Carga de Productos</h1>
     <div>     
         <a href="{{route('productos.download.layout')}}" class="btn btn-primary">
             <i class="fas fa-file-excel me-2"></i> Descargar Layout
@@ -153,7 +162,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalTitle">Carga masiva de productos</h5>
+                <h5 class="modal-title" id="modalTitle">Carga de productos</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="productoForm" enctype="multipart/form-data">
@@ -367,25 +376,111 @@
             $('#removed-alert').hide();
         }
     }
+    
+     // Función para enviar los datos editados
+    function submitEditedData() {
+        const formData = new FormData();
+        const products = [];
+        
+        // Recopilar datos de la tabla
+        $('#productos-table tbody tr').each(function() {
+            const product = {};
+            $(this).find('.editable-input').each(function() {
+                console.log($(this).data('field'))
+                const field = $(this).data('field');
+                const value = $(this).val();
+                product[field] = value;
+            });         
 
-    $(document).ready(function () {
-        // Configurar CSRF token para todas las peticiones AJAX
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            products.push(product);
+        });
+        
+        if (products.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Tabla vacía',
+                text: 'No hay datos para enviar'
+            });
+            return;
+        }
+        
+        // Agregar datos al FormData
+        formData.append('products', JSON.stringify(products));
+        formData.append('_token', '{{ csrf_token() }}');
+        
+        showLoader();
+        
+        $.ajax({
+            url: '{{ route("productos.import.save") }}', // Ruta para el import final
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                hideLoader();
+                
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Importación completada!',
+                        html: `
+                            <p>${response.message || 'Datos importados correctamente'}</p>
+                            ${response.stats ? `
+                                <div class="text-start mt-3">
+                                    <p><strong>Resumen:</strong></p>
+                                    <p>✓ Registros importados: ${response.stats.imported || 0}</p>
+                                    <p>✓ Registros actualizados: ${response.stats.updated || 0}</p>
+                                    <p>✗ Errores: ${response.stats.errors || 0}</p>
+                                </div>
+                            ` : ''}
+                        `,
+                        confirmButtonText: 'Aceptar'
+                    }).then(() => {
+                        $('#previewModal').modal('hide');
+                        
+                        // Recargar tabla principal si existe
+                        if (typeof reloadProductTable === 'function') {
+                            reloadProductTable();
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.message || 'Error al importar los datos'
+                    });
+                }
+            },
+            error: function(xhr) {
+                hideLoader();
+                
+                let errorMessage = 'Error al conectar con el servidor';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                }
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: errorMessage
+                });
             }
         });
+    }
 
-        // Mostrar/Ocultar loader
-        function showLoader() {
-            $('#loaderOverlay').fadeIn();
-            $('body').css('overflow', 'hidden');
-        }
+    // Mostrar/Ocultar loader
+    function showLoader() {
+        $('#loaderOverlay').fadeIn();
+        $('body').css('overflow', 'hidden');
+    }
 
-        function hideLoader() {
-            $('#loaderOverlay').fadeOut();
-            $('body').css('overflow', 'auto');
-        }
+    function hideLoader() {
+        $('#loaderOverlay').fadeOut();
+        $('body').css('overflow', 'auto');
+    }
+
+
+    $(document).ready(function () {        
 
         // Validar archivo antes de enviar
         function validateFile(file) {
@@ -530,16 +625,30 @@
             });
         }
 
-        function fillPreviewTable(products, filename) {
+        async function fillPreviewTable(products, filename) {
             const tableBody = $('#productos-table tbody');
             tableBody.empty();
             
             // Obtener categorías y proveedores existentes (debes tener estas funciones)
-            const categorias = getCategorias(); // Array de categorías
-            const proveedores = getProveedores(); // Array de proveedores
+            /*const categorias = getCategorias(); // Array de categorías
+            const proveedores = getProveedores();*/ // Array de proveedores
+
+            const [categorias, proveedores] = await Promise.all([
+                loadCategoriasFromServer(),               
+                loadProveedoresFromServer()
+            ]);
             
             // Crear encabezados dinámicos
-            const headers = Object.keys(products[0] || {});
+            // Obtener headers del primer producto y asegurar que estén categoría y proveedor
+            const baseHeaders = Object.keys(products[0] || {});
+            
+            // Headers que queremos asegurar que estén presentes
+            const requiredHeaders = ['categoria', 'proveedor'];
+            
+            // Combinar headers, eliminando duplicados y asegurando el orden
+            const headers = [...new Set([...baseHeaders, ...requiredHeaders])];
+           
+            console.log(headers)
             const thead = $('#productos-table thead tr');
             thead.empty();
             
@@ -555,19 +664,19 @@
                 
                 headers.forEach(header => {
                     const value = product[header] || '';
+                    console.log("Estamos en el header: "+header)
                     
                     if (header === 'categoria') {
                         // Select para categorías
                         row.append(`
                             <td>
-                                <select class="form-control form-control-sm select2-categoria" 
+                                <select class="form-control form-control-sm editable-input select2-categoria" 
                                         name="categoria[]" 
                                         data-index="${index}"
-                                        style="width: 100%;">
-                                    <option value="">Seleccionar categoría</option>
-                                    ${categorias.map(cat => 
-                                        `<option value="${cat}" ${cat === value ? 'selected' : ''}>${cat}</option>`
-                                    ).join('')}
+                                        style="width: 100%;"
+                                        data-field="${header}"
+                                        data-index="${index}">
+                                    <option value="">Seleccionar categoría</option>                                 
                                 </select>
                             </td>
                         `);
@@ -575,14 +684,13 @@
                         // Select para proveedores
                         row.append(`
                             <td>
-                                <select class="form-control form-control-sm select2-proveedor" 
+                                <select class="form-control form-control-sm editable-input select2-proveedor" 
                                         name="proveedor[]" 
                                         data-index="${index}"
-                                        style="width: 100%;">
-                                    <option value="">Seleccionar proveedor</option>
-                                    ${proveedores.map(prov => 
-                                        `<option value="${prov}" ${prov === value ? 'selected' : ''}>${prov}</option>`
-                                    ).join('')}
+                                        style="width: 100%;"
+                                        data-field="${header}"
+                                        data-index="${index}">
+                                    <option value="">Seleccionar proveedor</option>                                    
                                 </select>
                             </td>
                         `);
@@ -623,7 +731,7 @@
             initDataTable();
             
             // Inicializar Select2
-            initSelect2();
+            initSelect2(categorias, proveedores);
             
             // Actualizar contador
             updateRowCount();
@@ -663,22 +771,63 @@
 
         
 
-        function initSelect2() {
+        function initSelect2(categorias, proveedores) {
             // Inicializar Select2 para categorías
             $('.select2-categoria').select2({
-                placeholder: 'Seleccionar categoría',
+                placeholder: 'Buscar o seleccionar categoría',
                 allowClear: true,
                 dropdownParent: $('#previewModal'),
-                width: '100%'
+                width: '100%',
+                data: categorias.map(cat => ({
+                    id: cat.id || cat,
+                    text: cat.text || cat
+                })),
+                escapeMarkup: function(markup) {
+                    return markup;
+                },
+                templateResult: function(data) {
+                    if (data.loading) return data.text;
+                    
+                    // Resaltar búsqueda
+                    var term = $('.select2-categoria').data('select2').dropdown.$search.val();
+                    if (term) {
+                        var text = data.text;
+                        var pattern = new RegExp('(' + term + ')', 'gi');
+                        text = text.replace(pattern, '<strong>$1</strong>');
+                        return $('<span>').html(text).prop('outerHTML');
+                    }
+                    return data.text;
+                }
             });
-            
-            // Inicializar Select2 para proveedores
+
             $('.select2-proveedor').select2({
-                placeholder: 'Seleccionar proveedor',
+                placeholder: 'Buscar proveedor',
                 allowClear: true,
                 dropdownParent: $('#previewModal'),
-                width: '100%'
-            });
+                width: '100%',
+                data: proveedores.map(prov => ({
+                    id: prov.id || prov,
+                    text: prov.text || prov
+                })),
+                escapeMarkup: function(markup) {
+                    return markup;
+                },
+                templateResult: function(data) {
+                    if (data.loading) return data.text;
+                    
+                    // Resaltar búsqueda
+                    var term = $('.select2-proveedor').data('select2').dropdown.$search.val();
+                    if (term) {
+                        var text = data.text;
+                        var pattern = new RegExp('(' + term + ')', 'gi');
+                        text = text.replace(pattern, '<strong>$1</strong>');
+                        return $('<span>').html(text).prop('outerHTML');
+                    }
+                    return data.text;
+                }
+            });          
+            
+         
             
             // Actualizar Select2 cuando se redibuja DataTable
             $('#productos-table').on('draw.dt', function() {
@@ -794,36 +943,71 @@
                 'LALA'
             ];
         }
-
-        // Versión con AJAX para obtener datos reales
-        function loadCategoriasFromServer() {
-            return new Promise((resolve, reject) => {
-                $.ajax({
-                    url: '',
+        
+        async function loadCategoriasFromServer() {
+            try {
+                const response = await $.ajax({
+                    url: '{{ route("categorias.all") }}',
                     type: 'GET',
-                    success: function(response) {
-                        resolve(response.data || []);
-                    },
-                    error: function() {
-                        resolve([]); // Retornar array vacío en caso de error
-                    }
+                    dataType: 'json',
+                    timeout: 10000 // 10 segundos timeout
                 });
-            });
+                
+                if (response.success && response.data) {
+                    console.log('Categorías cargadas:', response.data.length);
+                    return response.data;
+                } else {
+                    throw new Error(response.message || 'Error en la respuesta del servidor');
+                }
+            } catch (error) {
+                console.error('Error cargando categorías:', error);
+                
+                // Mostrar alerta pero continuar con datos estáticos
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Categorías no disponibles',
+                    text: 'Se cargarán categorías predeterminadas. Error: ' + error.message,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+                
+                return getCategoriasFallback();
+            }
         }
 
-        function loadProveedoresFromServer() {
-            return new Promise((resolve, reject) => {
-                $.ajax({
-                    url: '',
+        // Función mejorada para cargar proveedores
+        async function loadProveedoresFromServer() {
+            try {
+                const response = await $.ajax({
+                    url: '{{ route("proveedores.all") }}',
                     type: 'GET',
-                    success: function(response) {
-                        resolve(response.data || []);
-                    },
-                    error: function() {
-                        resolve([]);
-                    }
+                    dataType: 'json',
+                    timeout: 10000
                 });
-            });
+                
+                if (response.success && response.data) {
+                    console.log('Proveedores cargados:', response.data.length);
+                    return response.data;
+                } else {
+                    throw new Error(response.message || 'Error en la respuesta del servidor');
+                }
+            } catch (error) {
+                console.error('Error cargando proveedores:', error);
+                
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Proveedores no disponibles',
+                    text: 'Se cargarán proveedores predeterminados. Error: ' + error.message,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+                
+                return getProveedoresFallback();
+            }
         }
 
         function formatHeader(header) {
@@ -845,96 +1029,7 @@
         function updateRowCount() {
             const rowCount = $('#productos-table tbody tr').length;
             $('#row-count').text(`${rowCount} registros`);
-        }
-
-        // Función para enviar los datos editados
-        function submitEditedData() {
-            const formData = new FormData();
-            const products = [];
-            
-            // Recopilar datos de la tabla
-            $('#productos-table tbody tr').each(function() {
-                const product = {};
-                $(this).find('.editable-input').each(function() {
-                    const field = $(this).data('field');
-                    const value = $(this).val();
-                    product[field] = value;
-                });
-                products.push(product);
-            });
-            
-            if (products.length === 0) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Tabla vacía',
-                    text: 'No hay datos para enviar'
-                });
-                return;
-            }
-            
-            // Agregar datos al FormData
-            formData.append('products', JSON.stringify(products));
-            formData.append('_token', '{{ csrf_token() }}');
-            
-            showLoader();
-            
-            $.ajax({
-                url: '{{ route("productos.import.save") }}', // Ruta para el import final
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    hideLoader();
-                    
-                    if (response.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: '¡Importación completada!',
-                            html: `
-                                <p>${response.message || 'Datos importados correctamente'}</p>
-                                ${response.stats ? `
-                                    <div class="text-start mt-3">
-                                        <p><strong>Resumen:</strong></p>
-                                        <p>✓ Registros importados: ${response.stats.imported || 0}</p>
-                                        <p>✓ Registros actualizados: ${response.stats.updated || 0}</p>
-                                        <p>✗ Errores: ${response.stats.errors || 0}</p>
-                                    </div>
-                                ` : ''}
-                            `,
-                            confirmButtonText: 'Aceptar'
-                        }).then(() => {
-                            $('#previewModal').modal('hide');
-                            
-                            // Recargar tabla principal si existe
-                            if (typeof reloadProductTable === 'function') {
-                                reloadProductTable();
-                            }
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: response.message || 'Error al importar los datos'
-                        });
-                    }
-                },
-                error: function(xhr) {
-                    hideLoader();
-                    
-                    let errorMessage = 'Error al conectar con el servidor';
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        errorMessage = xhr.responseJSON.message;
-                    }
-                    
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: errorMessage
-                    });
-                }
-            });
-        }
+        }       
 
         // Limpiar formulario cuando se cierre el modal
         $('#productoModal').on('hidden.bs.modal', function() {

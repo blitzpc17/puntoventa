@@ -37,6 +37,7 @@ Route::resource('productos', ProductoController::class);
 Route::get('proveedores/buscar', [ProveedorController::class, 'buscar'])->name('proveedores.buscar');
 Route::get('proveedores/{id}/productos', [ProveedorController::class, 'getProductos'])->name('proveedores.productos');
 Route::get('proveedores/{id}/compras', [ProveedorController::class, 'getCompras'])->name('proveedores.compras');
+Route::get('proveedores/listar', [ProveedorController::class, 'all'])->name('proveedores.all');
 Route::resource('proveedores', ProveedorController::class);
 
 
@@ -46,6 +47,8 @@ Route::resource('clientes', ClienteController::class);
 
 //categorias
 Route::get('categorias-data', [CategoriaController::class, 'getCategorias'])->name('categorias.data');
+Route::get('categorias/listar', [CategoriaController::class, 'all'])->name('categorias.all');
+
 Route::resource('categorias', CategoriaController::class);
 
 
