@@ -312,7 +312,7 @@
                         </a>
                     </li>
                      <li class="nav-item">
-                        <a class="nav-link {{ Request::is('corte-caja*') ? 'active' : '' }}" href="/corte-caja">
+                        <a class="nav-link {{ Request::is('categorias*') ? 'active' : '' }}" href="/categorias">
                             <i class="fas fa-fw fa-layer-group me-2"></i>
                             Categorías
                         </a>

@@ -377,26 +377,29 @@ class ProductoController extends Controller
             foreach ($lotes as $lote) {
                 $productosLote = $lote->map(function ($producto) {
                     $data = [
-                        "codigo" => $producto['codigo'],  // Usar corchetes en lugar de ->
+                        "codigo" => $producto['codigo_bclave'], 
                         "proveedor_Id" => $producto['proveedor'],
                         "categoriaId" => $producto['categoria'],
                         "nombre" => $producto['nombre'],
-                        "descripcion" => $producto['descripcion'],
+                        "descripcion" => empty($producto['descripcion'])?"":$producto['descripcion'],
                         "precio_compra" => $producto['precio_compra'],
                         "precio_venta" => $producto['precio_venta'],
-                        "existencia" => $producto['cantidad'],
-                        "min_existencia" => $producto['existencia_minima']
+                        "precio_mayoreo" => empty($producto['precio_mayoreo'])?0:$producto['precio_mayoreo'],
+                        "existencia" => $producto['inventario'],
+                        "min_existencia" => $producto['inventario_minimo']
                     ];
                     return array_merge($data, [
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
                 });
+
+               // dd($productosLote);
                 
                 Producto::upsert(
                     $productosLote->toArray(),
                     ['codigo'],
-                    ['codigo','proveedor_Id', 'categoriaId', 'nombre', 'descripcion', 'precio_compra', 'precio_venta', 'existencia', 'min_existencia', 'updated_at']
+                    ['codigo','proveedor_Id', 'categoriaId', 'nombre', 'descripcion', 'precio_compra', 'precio_venta', 'precio_mayoreo', 'existencia', 'min_existencia', 'updated_at']
                 );
                 
                 $totalProcesados += $lote->count();

@@ -21,6 +21,7 @@ class ProductsImport implements ToModel, WithHeadingRow//, WithValidation, WithB
             'descripcion'       => $row['DESCRIPCION'] ?? $row['DESCRIPCION'] ??   null,
             'precioVenta'       => $row['PRECIO_VENTA'] ?? $row['PRECIO_VENTA'] ?? 0,
             'precioCompra'       => $row['PRECIO_COMPRA'] ?? $row['PRECIO_COMPRA'] ?? 0,
+            'precioMayoreo'       => $row['PRECIO_COMPRA'] ?? $row['PRECIO_COMPRA'] ?? 0,
             'cantidad'       => $row['CANTIDAD'] ?? $row['CANTIDAD'] ?? 0,
             'existenciaMinima'    => $row['EXISTENCIA_MINIMA'] ?? $row['EXISTENCIA_MINIMA'] ?? 0,
         ]);
